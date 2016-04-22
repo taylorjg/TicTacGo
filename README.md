@@ -11,3 +11,4 @@ with the following differences:
 
 * [Cycle.js](http://cycle.js.org/)
 * [Browserify, Babelify and ES6](http://egorsmirnov.me/2015/05/25/browserify-babelify-and-es6.html)
+* [.babelrc](https://babeljs.io/docs/usage/babelrc/)
