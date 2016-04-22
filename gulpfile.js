@@ -1,17 +1,12 @@
 "use strict";
 
 const gulp = require("gulp");
-const babel = require("gulp-babel");
-const browserify = require("gulp-browserify");
+const browserify = require("browserify");
+const babelify = require("babelify");
+const source = require("vinyl-source-stream");
 
 const PATHS = {
     clientStaticFiles: "client/**/*.{html,css,gif}",
-    clientJavaScriptFiles: "client/**/*.js",
-    clientLibs: [
-        "node_modules/rx/dist/rx.all.js",
-        "node_modules/@cycle/core/dist/cycle.js",
-        "node_modules/@cycle/dom/dist/cycle-dom.js"
-    ],
     dist: "server/public"
 };
 
@@ -21,22 +16,15 @@ gulp.task("copyStaticFiles", function () {
         .pipe(gulp.dest(PATHS.dist));    
 });
 
-gulp.task("copyLibs", function () {
-    return gulp
-        .src(PATHS.clientLibs)
+gulp.task("bundle", function () {
+    return browserify({entries: "./client/script.js", debug: true})
+        .transform(babelify, {presets: ["es2015"]})
+        .bundle()
+        .pipe(source("bundle.js"))
         .pipe(gulp.dest(PATHS.dist));    
 });
 
-gulp.task("transpile", function () {
-    return gulp
-        .src(PATHS.clientJavaScriptFiles)
-        .pipe(babel({
-            presets: ["es2015"]
-        }))
-        .pipe(gulp.dest(PATHS.dist))
-});
-
-gulp.task("build", ["copyStaticFiles", "copyLibs", "transpile"], function () {
+gulp.task("build", ["copyStaticFiles", "bundle"], function () {
 });
 
 gulp.task("default", ["build"], function () {
