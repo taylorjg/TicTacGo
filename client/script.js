@@ -4,20 +4,20 @@ import {makeDOMDriver, hJSX} from "@cycle/dom";
 
 function intent(sources) {
     const actions = {
-        cellClick$: sources.DOM.select(".cell").events("click")
+        cellSelected$: sources.DOM.select(".cell").events("click")
             .map(ev => ev.target.id)
             .map(id => IDS_TO_CELL_INDICES[id])
     };
     return actions;
 }
 
-const EMPTY_S = "";
-const CROSS_S = "X"; 
-const NOUGHT_S = "O"; 
-
 const EMPTY_V = 0;
 const CROSS_V = 1;
 const NOUGHT_V = 2;
+
+const EMPTY_S = "";
+const CROSS_S = "X"; 
+const NOUGHT_S = "O"; 
 
 const IDS_TO_CELL_INDICES = {
     "cell00": 0,
@@ -42,10 +42,13 @@ function model(actions) {
         };
     }
     
-    const humanMove$ = actions.cellClick$.map(index => {
+    const humanMove$ = actions.cellSelected$.map(cellIndex => {
         return function(state) {
+            if (state.cells[cellIndex] !== EMPTY_V) {
+                return state;
+            }
             const newCells = state.cells.slice();
-            newCells[index] = CROSS_V;
+            newCells[cellIndex] = CROSS_V;
             const newState = {
                 cells: newCells
             };
