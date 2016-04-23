@@ -18,7 +18,7 @@ gulp.task("copyStaticFiles", function () {
 
 gulp.task("bundle", function () {
     return browserify({entries: "./client/script.js", debug: true})
-        .transform(babelify, {presets: ["es2015"]})
+        .transform(babelify)
         .bundle()
         .pipe(source("bundle.js"))
         .pipe(gulp.dest(PATHS.dist));    
