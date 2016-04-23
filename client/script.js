@@ -4,7 +4,9 @@ import {makeDOMDriver, hJSX} from "@cycle/dom";
 
 function intent(sources) {
     const actions = {
-        cellClick$: sources.DOM.select(".cell").events("click").map(ev => ev.target.id)
+        cellClick$: sources.DOM.select(".cell").events("click")
+            .map(ev => ev.target.id)
+            .map(id => IDS_TO_CELL_INDICES[id])
     };
     return actions;
 }
@@ -40,9 +42,8 @@ function model(actions) {
         };
     }
     
-    const humanMove$ = actions.cellClick$.map(id => {
+    const humanMove$ = actions.cellClick$.map(index => {
         return function(state) {
-            const index = IDS_TO_CELL_INDICES[id];
             const newCells = state.cells.slice();
             newCells[index] = CROSS_V;
             const newState = {
