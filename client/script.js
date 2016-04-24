@@ -12,9 +12,9 @@ function main(sources) {
                 <div className="row">
                     <div className="col-md-offset-4 col-md-4">
                         <h1>Tic-Tac-Toe</h1>
-                        {boardVTree}
                     </div>
                 </div>
+                {boardVTree}
             </div>),
         HTTP: board.HTTP
     };
