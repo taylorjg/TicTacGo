@@ -115,15 +115,25 @@ function model(actions) {
     return state$;
 }
 
+function renderCell(state, id) {
+    const index = IDS_TO_CELL_INDICES[id];
+    var classNames = ["cell"];
+    const needsThickRightBorder = index % 3 !== 2; 
+    if (needsThickRightBorder) {
+        classNames.push("thickRight");
+    }
+    const vtree$ = <td id={id} className={classNames.join(" ")}>{state.board[index]}</td>;
+    return vtree$;
+}
+
 function renderButtonRow(state) {
+    const newGameButton = state.isGameOver
+        ? <button type="button" className="newGame btn btn-sm btn-primary">New Game</button>
+        : null;
     const vtree$ =
         <div className="row">
             <div className="col-md-offset-4 col-md-4">
-                {
-                    state.isGameOver
-                        ? <button type="button" className="newGame btn btn-sm btn-primary">New Game</button>
-                        : null
-                }
+                {newGameButton}
             </div>
         </div>;
     return vtree$;
@@ -137,19 +147,19 @@ function view(state$) {
                     <table id="board">
                         <tbody>
                             <tr className="thickBottom">
-                                <td id="cell00" className="cell thickRight">{state.board[0]}</td>
-                                <td id="cell01" className="cell thickRight">{state.board[1]}</td>
-                                <td id="cell02" className="cell">{state.board[2]}</td>
+                                {renderCell(state, "cell00")}
+                                {renderCell(state, "cell01")}
+                                {renderCell(state, "cell02")}
                             </tr>
                             <tr className="thickBottom">
-                                <td id="cell10" className="cell thickRight">{state.board[3]}</td>
-                                <td id="cell11" className="cell thickRight">{state.board[4]}</td>
-                                <td id="cell12" className="cell">{state.board[5]}</td>
+                                {renderCell(state, "cell10")}
+                                {renderCell(state, "cell11")}
+                                {renderCell(state, "cell12")}
                             </tr>
                             <tr>
-                                <td id="cell20" className="cell thickRight">{state.board[6]}</td>
-                                <td id="cell21" className="cell thickRight">{state.board[7]}</td>
-                                <td id="cell22" className="cell">{state.board[8]}</td>
+                                {renderCell(state, "cell20")}
+                                {renderCell(state, "cell21")}
+                                {renderCell(state, "cell22")}
                             </tr>
                         </tbody>
                     </table>
