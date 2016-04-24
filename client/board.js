@@ -26,6 +26,20 @@ function setCharAt(s, ch, index) {
     return chs.join("");
 } 
 
+function makeComputerMoveRequest(state) {
+    return {
+        url: COMPUTER_MOVE_URL,
+        method: "POST",
+        send: {
+            board: state.board,
+            player1Piece: state.humanPiece,
+            player2Piece: state.computerPiece
+        },
+        // Temporarily setting 'eager' to true until we handle responses.
+        eager: true
+    };
+}
+
 function intent(sources) {
     const actions = {
         cellSelected$: sources.DOM.select(".cell").events("click")
@@ -47,8 +61,8 @@ function model(actions) {
         };
     }
     
-    const humanMove$ = actions.cellSelected$.map(index => {
-        return function(state) {
+    const humanMove$ = actions.cellSelected$.map(index =>
+        state => {
             if (!state.isHumanMove || state.board[index] !== EMPTY) {
                 return state;
             }
@@ -58,13 +72,10 @@ function model(actions) {
                 humanPiece: state.humanPiece,
                 computerPiece: state.computerPiece
             };
-            
             const request = makeComputerMoveRequest(updatedState);
             actions.request$.onNext(request);
-            
             return updatedState;
-        }
-    });
+        });
 
     const transform$ = Observable.merge(humanMove$); 
     
@@ -99,21 +110,7 @@ function view(state$) {
     return vtree$;
 } 
 
-function makeComputerMoveRequest(state) {
-    return {
-        url: COMPUTER_MOVE_URL,
-        method: "POST",
-        send: {
-            board: state.board,
-            player1Piece: state.humanPiece,
-            player2Piece: state.computerPiece
-        },
-        // Temporarily setting 'eager' to true until we handle responses.
-        eager: true
-    };
-}
-
-export default function Board(sources) {
+function Board(sources) {
     const actions = intent(sources);
     const state$ = model(actions);
     return {
@@ -121,3 +118,5 @@ export default function Board(sources) {
         HTTP: actions.request$
     };
 }
+
+export default Board;
