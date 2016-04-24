@@ -1,4 +1,4 @@
-import Rx from "rx";
+import {Observable, Subject} from "rx";
 import {hJSX} from "@cycle/dom";
 
 const NOUGHT = "O"; 
@@ -31,7 +31,7 @@ function intent(sources) {
         cellSelected$: sources.DOM.select(".cell").events("click")
             .map(ev => ev.target.id)
             .map(id => IDS_TO_CELL_INDICES[id]),
-        request$: new Rx.Subject()
+        request$: new Subject()
     };
     return actions;
 }
@@ -66,7 +66,7 @@ function model(actions) {
         }
     });
 
-    const transform$ = Rx.Observable.merge(humanMove$); 
+    const transform$ = Observable.merge(humanMove$); 
     
     const state$ = transform$
         .startWith(seedState())
@@ -108,6 +108,7 @@ function makeComputerMoveRequest(state) {
             player1Piece: state.humanPiece,
             player2Piece: state.computerPiece
         },
+        // Temporarily setting 'eager' to true until we handle responses.
         eager: true
     };
 }

@@ -1,5 +1,4 @@
-import Rx from "rx";
-import Cycle from "@cycle/core";
+import {run} from "@cycle/core";
 import {makeDOMDriver, hJSX} from "@cycle/dom";
 import {makeHTTPDriver} from "@cycle/http";
 import Board from "./board";
@@ -26,4 +25,4 @@ const drivers = {
     HTTP: makeHTTPDriver()
 };
 
-Cycle.run(main, drivers);
+run(main, drivers);
