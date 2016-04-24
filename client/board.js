@@ -35,8 +35,7 @@ function makeComputerMoveRequest(state) {
             player1Piece: state.humanPiece,
             player2Piece: state.computerPiece
         },
-        // Temporarily setting 'eager' to true until we handle responses.
-        eager: true
+        category: "computerMove"
     };
 }
 
@@ -45,7 +44,8 @@ function intent(sources) {
         cellSelected$: sources.DOM.select(".cell").events("click")
             .map(ev => ev.target.id)
             .map(id => IDS_TO_CELL_INDICES[id]),
-        request$: new Subject()
+        request$: new Subject(),
+        response$$: sources.HTTP
     };
     return actions;
 }
@@ -76,8 +76,22 @@ function model(actions) {
             actions.request$.onNext(request);
             return updatedState;
         });
+        
+    const computerMove$ = actions.response$$
+        .filter(response$ => response$.request.category === "computerMove")
+        .mergeAll()
+        .map(response =>
+            state => {
+                const updatedState = {
+                    isHumanMove: true,
+                    board: response.body.board,
+                    humanPiece: state.humanPiece,
+                    computerPiece: state.computerPiece
+                };
+                return updatedState;
+            });
 
-    const transform$ = Observable.merge(humanMove$); 
+    const transform$ = Observable.merge(humanMove$, computerMove$); 
     
     const state$ = transform$
         .startWith(seedState())
