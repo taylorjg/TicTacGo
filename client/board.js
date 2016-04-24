@@ -54,23 +54,29 @@ function model(actions) {
     
     function seedState() {
         return {
-            isHumanMove: true,
             board: INITIAL_BOARD,
             humanPiece: CROSS,
-            computerPiece: NOUGHT
+            computerPiece: NOUGHT,
+            isHumanMove: true,
+            isGameOver: false,
+            winningPlayer: null,
+            winningLine: null
         };
     }
     
     const humanMove$ = actions.cellSelected$.map(index =>
         state => {
-            if (!state.isHumanMove || state.board[index] !== EMPTY) {
+            if (state.isGameOver || !state.isHumanMove || state.board[index] !== EMPTY) {
                 return state;
             }
             const updatedState = {
-                isHumanMove: false,
                 board: setCharAt(state.board, state.humanPiece, index),
                 humanPiece: state.humanPiece,
-                computerPiece: state.computerPiece
+                computerPiece: state.computerPiece,
+                isHumanMove: false,
+                isGameOver: false,
+                winningPlayer: null,
+                winningLine: null
             };
             const request = makeComputerMoveRequest(updatedState);
             actions.request$.onNext(request);
@@ -83,10 +89,13 @@ function model(actions) {
         .map(response =>
             state => {
                 const updatedState = {
-                    isHumanMove: true,
                     board: response.body.board,
                     humanPiece: state.humanPiece,
-                    computerPiece: state.computerPiece
+                    computerPiece: state.computerPiece,
+                    isHumanMove: true,
+                    isGameOver: response.body.gameOver,
+                    winningPlayer: response.body.winningPlayer || null,
+                    winningLine: response.body.winningLine || null
                 };
                 return updatedState;
             });
