@@ -44,6 +44,7 @@ function intent(sources) {
         cellSelected$: sources.DOM.select(".cell").events("click")
             .map(ev => ev.target.id)
             .map(id => IDS_TO_CELL_INDICES[id]),
+        newGame$: sources.DOM.select(".newGame").events("click"),
         request$: new Subject(),
         response$$: sources.HTTP
     };
@@ -100,7 +101,12 @@ function model(actions) {
                 return updatedState;
             });
 
-    const transform$ = Observable.merge(humanMove$, computerMove$); 
+    const newGame$ = actions.newGame$.map(_ => _ => seedState());  
+    
+    const transform$ = Observable.merge(
+        humanMove$,
+        computerMove$,
+        newGame$);
     
     const state$ = transform$
         .startWith(seedState())
@@ -115,7 +121,7 @@ function renderButtonRow(state) {
             <div className="col-md-offset-4 col-md-4">
                 {
                     state.isGameOver
-                        ? <button type="button" className=".newGame btn btn-sm btn-primary">New Game</button>
+                        ? <button type="button" className="newGame btn btn-sm btn-primary">New Game</button>
                         : null
                 }
             </div>
