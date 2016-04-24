@@ -122,6 +122,10 @@ function renderCell(state, id) {
     if (needsThickRightBorder) {
         classNames.push("thickRight");
     }
+    const needsHightlight = state.winningLine && state.winningLine.includes(index);
+    if (needsHightlight) {
+        classNames.push("highlight");
+    }
     const vtree$ = <td id={id} className={classNames.join(" ")}>{state.board[index]}</td>;
     return vtree$;
 }
