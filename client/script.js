@@ -16,7 +16,8 @@ function main(sources) {
                         {boardVTree}
                     </div>
                 </div>
-            </div>)   
+            </div>),
+        HTTP: board.HTTP
     };
 }
 

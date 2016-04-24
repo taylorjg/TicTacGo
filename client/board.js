@@ -30,7 +30,8 @@ function intent(sources) {
     const actions = {
         cellSelected$: sources.DOM.select(".cell").events("click")
             .map(ev => ev.target.id)
-            .map(id => IDS_TO_CELL_INDICES[id])
+            .map(id => IDS_TO_CELL_INDICES[id]),
+        request$: new Rx.Subject()
     };
     return actions;
 }
@@ -39,26 +40,32 @@ function model(actions) {
     
     function seedState() {
         return {
+            isHumanMove: true,
             board: INITIAL_BOARD,
-            player1Piece: CROSS,
-            player2Piece: NOUGHT
+            humanPiece: CROSS,
+            computerPiece: NOUGHT
         };
     }
     
     const humanMove$ = actions.cellSelected$.map(index => {
         return function(state) {
-            if (state.board[index] !== EMPTY) {
+            if (!state.isHumanMove || state.board[index] !== EMPTY) {
                 return state;
             }
             const updatedState = {
-                board: setCharAt(state.board, CROSS, index),
-                player1Piece: state.player1Piece,
-                player2Piece: state.player2Piece
+                isHumanMove: false,
+                board: setCharAt(state.board, state.humanPiece, index),
+                humanPiece: state.humanPiece,
+                computerPiece: state.computerPiece
             };
+            
+            const request = makeComputerMoveRequest(updatedState);
+            actions.request$.onNext(request);
+            
             return updatedState;
         }
     });
-    
+
     const transform$ = Rx.Observable.merge(humanMove$); 
     
     const state$ = transform$
@@ -96,18 +103,20 @@ function makeComputerMoveRequest(state) {
     return {
         url: COMPUTER_MOVE_URL,
         method: "POST",
-        query: {
+        send: {
             board: state.board,
-            player1Piece: state.player1Piece,
-            player2Piece: state.player2Piece
-        }
+            player1Piece: state.humanPiece,
+            player2Piece: state.computerPiece
+        },
+        eager: true
     };
 }
 
 export default function Board(sources) {
-    const state$ = model(intent(sources));
+    const actions = intent(sources);
+    const state$ = model(actions);
     return {
         DOM: view(state$),
-        HTTP: null
+        HTTP: actions.request$
     };
 }
