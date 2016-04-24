@@ -1,13 +1,10 @@
 import Rx from "rx";
 import {hJSX} from "@cycle/dom";
 
-const EMPTY_VALUE = 0;
-const CROSS_VALUE = 1;
-const NOUGHT_VALUE = 2;
-
-const EMPTY_STRING = "";
-const CROSS_STRING = "X"; 
-const NOUGHT_STRING = "O"; 
+const NOUGHT = "O"; 
+const CROSS = "X";
+const EMPTY = "-";
+const INITIAL_BOARD = EMPTY.repeat(9); 
 
 const IDS_TO_CELL_INDICES = {
     "cell00": 0,
@@ -19,16 +16,18 @@ const IDS_TO_CELL_INDICES = {
     "cell20": 6,
     "cell21": 7,
     "cell22": 8
-}; 
+};
 
-function cellContents(state, index) {
-    switch (state.cells[index]) {
-        case CROSS_VALUE:
-            return CROSS_STRING;
-        case NOUGHT_VALUE:
-            return NOUGHT_STRING;
+const COMPUTER_MOVE_URL = "/api/computerMove"; 
+
+function cellDisplayValue(state, index) {
+    var piece = state.board[index];
+    switch (piece) {
+        case NOUGHT:
+        case CROSS:
+            return piece; 
         default:
-            return EMPTY_STRING;
+            return "";
     } 
 } 
 
@@ -45,24 +44,26 @@ function model(actions) {
     
     function seedState() {
         return {
-            cells: [
-                EMPTY_VALUE, EMPTY_VALUE, EMPTY_VALUE,
-                EMPTY_VALUE, EMPTY_VALUE, EMPTY_VALUE,
-                EMPTY_VALUE, EMPTY_VALUE, EMPTY_VALUE]
+            board: INITIAL_BOARD,
+            player1Piece: CROSS,
+            player2Piece: NOUGHT
         };
     }
     
-    const humanMove$ = actions.cellSelected$.map(cellIndex => {
+    const humanMove$ = actions.cellSelected$.map(index => {
         return function(state) {
-            if (state.cells[cellIndex] !== EMPTY_VALUE) {
+            if (state.board[index] !== EMPTY) {
                 return state;
             }
-            const newCells = state.cells.slice();
-            newCells[cellIndex] = CROSS_VALUE;
-            const newState = {
-                cells: newCells
+            const chars = state.board.split("");
+            chars[index] = state.player1Piece;
+            const updatedBoard = chars.join("");
+            const updatedState = {
+                board: updatedBoard,
+                player1Piece: state.player1Piece,
+                player2Piece: state.player2Piece
             };
-            return newState;
+            return updatedState;
         }
     });
     
@@ -80,27 +81,41 @@ function view(state$) {
         <table id="board">
             <tbody>
                 <tr className="thickBottom">
-                    <td id="cell00" className="cell thickRight">{cellContents(state, 0)}</td>
-                    <td id="cell01" className="cell thickRight">{cellContents(state, 1)}</td>
-                    <td id="cell02" className="cell">{cellContents(state, 2)}</td>
+                    <td id="cell00" className="cell thickRight">{cellDisplayValue(state, 0)}</td>
+                    <td id="cell01" className="cell thickRight">{cellDisplayValue(state, 1)}</td>
+                    <td id="cell02" className="cell">{cellDisplayValue(state, 2)}</td>
                 </tr>
                 <tr className="thickBottom">
-                    <td id="cell10" className="cell thickRight">{cellContents(state, 3)}</td>
-                    <td id="cell11" className="cell thickRight">{cellContents(state, 4)}</td>
-                    <td id="cell12" className="cell">{cellContents(state, 5)}</td>
+                    <td id="cell10" className="cell thickRight">{cellDisplayValue(state, 3)}</td>
+                    <td id="cell11" className="cell thickRight">{cellDisplayValue(state, 4)}</td>
+                    <td id="cell12" className="cell">{cellDisplayValue(state, 5)}</td>
                 </tr>
                 <tr>
-                    <td id="cell20" className="cell thickRight">{cellContents(state, 6)}</td>
-                    <td id="cell21" className="cell thickRight">{cellContents(state, 7)}</td>
-                    <td id="cell22" className="cell">{cellContents(state, 8)}</td>
+                    <td id="cell20" className="cell thickRight">{cellDisplayValue(state, 6)}</td>
+                    <td id="cell21" className="cell thickRight">{cellDisplayValue(state, 7)}</td>
+                    <td id="cell22" className="cell">{cellDisplayValue(state, 8)}</td>
                 </tr>
             </tbody>
         </table>);
     return vtree$;
 } 
 
-export default function Board(sources) {
+function makeComputerMoveRequest(state) {
     return {
-        DOM: view(model(intent(sources))) 
+        url: COMPUTER_MOVE_URL,
+        method: "POST",
+        query: {
+            board: state.board,
+            player1Piece: CROSS,
+            player2Piece: NOUGHT
+        }
+    };
+}
+
+export default function Board(sources) {
+    const state$ = model(intent(sources));
+    return {
+        DOM: view(state$),
+        HTTP: null
     };
 }
