@@ -11,7 +11,7 @@ function main(sources) {
             <div className="container">
                 <div className="row">
                     <div className="col-md-offset-4 col-md-4">
-                        <h1>Tic-Tac-Toe</h1>
+                        <h1>Tic-Tac-Go</h1>
                     </div>
                 </div>
                 {boardVTree}

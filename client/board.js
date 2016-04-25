@@ -176,9 +176,8 @@ function view(state$) {
 
 function Board(sources) {
     const actions = intent(sources);
-    const state$ = model(actions);
     return {
-        DOM: view(state$),
+        DOM: view(model(actions)),
         HTTP: actions.request$
     };
 }
