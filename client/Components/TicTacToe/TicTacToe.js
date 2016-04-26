@@ -1,4 +1,4 @@
-import {Observable, Subject} from "rx";
+import {Observable, Subject, Scheduler} from "rx";
 import {hJSX} from "@cycle/dom";
 import Board from "./Board";
 import Buttons from "./Buttons";
@@ -81,11 +81,11 @@ function model(actions) {
     const newGame$ = actions.newGame$.map(_ => _ => seedState());  
     
     const transform$ = Observable.merge(humanMove$, computerMove$, newGame$);
-    
+
+    // Note the use of Scheduler.default in the call to startWith.     
     const state$ = transform$
-        .startWith(seedState())
-        .scan((state, transform) => transform(state))
-        .delay(50); // INITIALISATION TIMING ISSUE !!!
+        .startWith(Scheduler.default, seedState())
+        .scan((state, transform) => transform(state));
         
     return state$;
 }
