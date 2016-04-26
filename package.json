@@ -4,12 +4,13 @@
   "description": "TicTacGo",
   "main": "gulpfile.js",
   "dependencies": {
-    "rx": "^4.1.0",
     "@cycle/core": "^6.0.3",
     "@cycle/dom": "^9.4.0",
     "@cycle/http": "^8.2.2",
+    "@cycle/isolate": "^1.2.0",
+    "body-parser": "^1.15.0",
     "express": "^4.13.4",
-    "body-parser": "^1.15.0"
+    "rx": "^4.1.0"
   },
   "devDependencies": {
     "babel-plugin-transform-react-jsx": "^6.7.5",

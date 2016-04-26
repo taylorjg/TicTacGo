@@ -1,22 +1,27 @@
+import {Observable} from "rx";
 import {run} from "@cycle/core";
 import {makeDOMDriver, hJSX} from "@cycle/dom";
 import {makeHTTPDriver} from "@cycle/http";
-import Board from "./board";
+import isolate from "@cycle/isolate";
+import TicTacToe from "./TicTacToe";
 
 function main(sources) {
-    const board = Board(sources);
-    const boardVTree$ = board.DOM; 
+    const ticTacToeWrapper = isolate(TicTacToe); 
+    const ticTacToe1 = ticTacToeWrapper(sources);
+    const ticTacToe2 = ticTacToeWrapper(sources);
     return {
-        DOM: boardVTree$.map(boardVTree =>
+        DOM: Observable.combineLatest(ticTacToe1.DOM, ticTacToe2.DOM, (vtree1, vtree2) =>
             <div className="container">
                 <div className="row">
                     <div className="col-md-offset-4 col-md-4">
                         <h1>Tic-Tac-Go</h1>
                     </div>
                 </div>
-                {boardVTree}
+                {vtree1}
+                <hr />
+                {vtree2}
             </div>),
-        HTTP: board.HTTP
+        HTTP: Observable.merge(ticTacToe1.HTTP, ticTacToe2.HTTP)
     };
 }
 

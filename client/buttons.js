@@ -1,6 +1,13 @@
 import {Observable, Subject} from "rx";
 import {hJSX} from "@cycle/dom";
 
+function intent(sources) {
+    const actions = {
+        newGame$: sources.DOM.select(".newGame").events("click")
+    };
+    return actions;
+}
+
 function renderButtonRow(state) {
     const newGameButton = state.isGameOver
         ? <button type="button" className="newGame btn btn-sm btn-primary">New Game</button>
@@ -15,13 +22,15 @@ function renderButtonRow(state) {
 }
 
 function view(state$) {
-    const vtree$ = state$.map(state => {renderButtonRow(state)});
+    const vtree$ = state$.map(renderButtonRow);
     return vtree$;
 }
 
-function Buttons(state$) {
+function Buttons(sources, state$) {
+    const actions = intent(sources);
     return {
-        DOM: view(state$)
+        DOM: view(state$),
+        newGame$: actions.newGame$
     };
 }
 
