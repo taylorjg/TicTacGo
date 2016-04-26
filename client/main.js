@@ -3,7 +3,7 @@ import {run} from "@cycle/core";
 import {makeDOMDriver, hJSX} from "@cycle/dom";
 import {makeHTTPDriver} from "@cycle/http";
 import isolate from "@cycle/isolate";
-import TicTacToe from "./TicTacToe";
+import TicTacToe from "./Components/TicTacToe/TicTacToe";
 
 function main(sources) {
     const ticTacToe1 = isolate(TicTacToe)(sources);

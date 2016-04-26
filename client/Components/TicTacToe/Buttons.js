@@ -1,4 +1,3 @@
-import {Observable, Subject} from "rx";
 import {hJSX} from "@cycle/dom";
 
 function intent(sources) {
