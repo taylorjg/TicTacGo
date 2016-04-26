@@ -1,6 +1,7 @@
 import {Observable, Subject, Scheduler} from "rx";
 import {hJSX} from "@cycle/dom";
 import Board from "./Board";
+import Messages from "./Messages";
 import Buttons from "./Buttons";
 
 const NOUGHT = "O"; 
@@ -8,7 +9,8 @@ const CROSS = "X";
 const EMPTY = " ";
 const INITIAL_BOARD = EMPTY.repeat(9); 
 const COMPUTER_MOVE_URL = "/api/computerMove";
-
+const DELIBERATE_COMPUTER_MOVE_DELAY = 300;
+    
 function setCharAt(s, ch, index) {
     const chs = s.split("");
     chs[index] = ch;
@@ -64,6 +66,7 @@ function model(actions) {
     const computerMove$ = actions.response$$
         .filter(response$ => response$.request.category === "computerMove")
         .mergeAll()
+        .delay(DELIBERATE_COMPUTER_MOVE_DELAY)
         .map(response =>
             state => {
                 const updatedState = {
@@ -93,6 +96,7 @@ function model(actions) {
 function TicTacToe(sources) {
     const proxyState$ = new Subject();
     const board = Board(sources, proxyState$);
+    const messages = Messages(sources, proxyState$);
     const buttons = Buttons(sources, proxyState$);
     const actions = {
         chosenCell$: board.chosenCell$,
@@ -103,9 +107,10 @@ function TicTacToe(sources) {
     const state$ = model(actions);
     state$.subscribe(proxyState$);
     return {
-        DOM: Observable.combineLatest(board.DOM, buttons.DOM, (boardVTree, buttonsVTree) =>
+        DOM: Observable.combineLatest(board.DOM, messages.DOM, buttons.DOM, (boardVTree, messagesVTree, buttonsVTree) =>
             <div>
                 {boardVTree}
+                {messagesVTree}
                 {buttonsVTree}
             </div>),
         HTTP: actions.request$
