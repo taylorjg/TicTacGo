@@ -36,16 +36,35 @@ function model(actions) {
             humanPiece: CROSS,
             computerPiece: NOUGHT,
             isHumanMove: true,
-            // isGameOver: false,
-            isGameOver: true,
+            isGameOver: false,
             winningPlayer: null,
             winningLine: null
         };
     }
 
+    const humanMove$ = actions.chosenCell$.map(index =>
+        state => {
+            if (state.isGameOver || !state.isHumanMove || state.board[index] !== EMPTY) {
+                return state;
+            }
+            const updatedState = {
+                board: setCharAt(state.board, state.humanPiece, index),
+                humanPiece: state.humanPiece,
+                computerPiece: state.computerPiece,
+                // isHumanMove: false,
+                isHumanMove: true,
+                isGameOver: false,
+                winningPlayer: null,
+                winningLine: null
+            };
+            // const request = makeComputerMoveRequest(updatedState);
+            // actions.request$.onNext(request);
+            return updatedState;
+        });
+        
     const newGame$ = actions.newGame$.map(_ => _ => seedState());  
     
-    const transform$ = Observable.merge(newGame$);
+    const transform$ = Observable.merge(humanMove$, newGame$);
     
     const state$ = transform$
         .startWith(seedState())

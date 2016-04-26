@@ -92,6 +92,8 @@ const IDS_TO_CELL_INDICES = {
 function intent(sources) {
     const actions = {
         chosenCell$: sources.DOM.select(".cell").events("click")
+            .map(ev => ev.target.id)
+            .map(id => IDS_TO_CELL_INDICES[id]),
     };
     return actions;
 }
