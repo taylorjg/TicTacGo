@@ -85,10 +85,10 @@ function model(actions) {
     
     const transform$ = Observable.merge(humanMove$, computerMove$, newGame$);
 
-    // Note the use of Scheduler.default in the call to startWith.     
     const state$ = transform$
         .startWith(Scheduler.default, seedState())
-        .scan((state, transform) => transform(state));
+        .scan((state, transform) => transform(state))
+        .delay(0); // INITIALISATION ISSUE!
         
     return state$;
 }
@@ -109,6 +109,7 @@ function TicTacToe(sources) {
     return {
         DOM: Observable.combineLatest(board.DOM, messages.DOM, buttons.DOM, (boardVTree, messagesVTree, buttonsVTree) =>
             <div>
+                <h1 align="center">Tic-Tac-Go</h1>
                 {boardVTree}
                 {messagesVTree}
                 {buttonsVTree}

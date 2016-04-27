@@ -12,13 +12,9 @@ function main(sources) {
         DOM: Observable.combineLatest(ticTacToe1.DOM, ticTacToe2.DOM, (vtree1, vtree2) =>
             <div className="container">
                 <div className="row">
-                    <div className="col-md-offset-4 col-md-4">
-                        <h1>Tic-Tac-Go</h1>
-                    </div>
+                    <div className="col-md-6">{vtree1}</div>
+                    <div className="col-md-6">{vtree2}</div>
                 </div>
-                {vtree1}
-                <hr />
-                {vtree2}
             </div>),
         HTTP: Observable.merge(ticTacToe1.HTTP, ticTacToe2.HTTP)
     };

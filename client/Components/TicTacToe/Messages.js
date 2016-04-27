@@ -26,13 +26,9 @@ function renderMessageRow(state) {
     const showSpinner = !state.isGameOver && !state.isHumanMove;
     const spinner = showSpinner ? <img id="spinner" src="spinner.gif" alt="spinner" /> : null; 
     const vtree$ =
-        <div className="row">
-            <div className="col-md-offset-4 col-md-4">
-                <div className="alert alert-info">
-                    <span>{message}</span><span>{spinner}</span>
-                </div>
-            </div>
-        </div>;
+        <div className="alert alert-info">
+            <span>{message}</span><span>{spinner}</span>
+        </div>
     return vtree$;
 }
 

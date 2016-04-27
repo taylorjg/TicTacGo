@@ -38,29 +38,25 @@ function renderCell(state, id) {
 
 function view(state$) {
     const vtree$ = state$.map(state =>
-        <div className="row">
-            <div className="col-md-offset-4 col-md-4">
-                <table id="board">
-                    <tbody>
-                        <tr className="thickBottom">
-                            {renderCell(state, "cell00")}
-                            {renderCell(state, "cell01")}
-                            {renderCell(state, "cell02")}
-                        </tr>
-                        <tr className="thickBottom">
-                            {renderCell(state, "cell10")}
-                            {renderCell(state, "cell11")}
-                            {renderCell(state, "cell12")}
-                        </tr>
-                        <tr>
-                            {renderCell(state, "cell20")}
-                            {renderCell(state, "cell21")}
-                            {renderCell(state, "cell22")}
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>);
+        <table id="board">
+            <tbody>
+                <tr className="thickBottom">
+                    {renderCell(state, "cell00")}
+                    {renderCell(state, "cell01")}
+                    {renderCell(state, "cell02")}
+                </tr>
+                <tr className="thickBottom">
+                    {renderCell(state, "cell10")}
+                    {renderCell(state, "cell11")}
+                    {renderCell(state, "cell12")}
+                </tr>
+                <tr>
+                    {renderCell(state, "cell20")}
+                    {renderCell(state, "cell21")}
+                    {renderCell(state, "cell22")}
+                </tr>
+            </tbody>
+        </table>);
     return vtree$;
 } 
 
