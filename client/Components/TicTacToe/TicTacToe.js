@@ -4,6 +4,8 @@ import Board from "./Board";
 import Messages from "./Messages";
 import Buttons from "./Buttons";
 
+const HUMAN_PLAYER = 1;
+const COMPUTER_PLAYER = 2;
 const NOUGHT = "O"; 
 const CROSS = "X";
 const EMPTY = " ";
@@ -30,20 +32,38 @@ function makeComputerMoveRequest(state) {
     };
 }
 
+function whoGoesFirst() {
+    return Math.random() < 0.5 ? HUMAN_PLAYER : COMPUTER_PLAYER;
+}
+
 function model(actions) {
     
     function seedState() {
-        return {
+        const isHumanMove = whoGoesFirst() == HUMAN_PLAYER;
+        const state = {
             board: INITIAL_BOARD,
             humanPiece: CROSS,
             computerPiece: NOUGHT,
-            isHumanMove: true,
+            isHumanMove: isHumanMove,
             isGameOver: false,
             winningPlayer: null,
             winningLine: null
         };
+        if (!isHumanMove) {
+            const request = makeComputerMoveRequest(state);
+            actions.request$.onNext(request);
+        }
+        return state;
     }
-
+    
+    const initState$ = actions.init$.map(_ => {
+        console.log("Inside actions.init$.map");
+        return _ => {
+            console.log("Inside actions.init$.map inner");
+            return seedState();
+        }
+    });
+      
     const humanMove$ = actions.chosenCell$.map(index =>
         state => {
             if (state.isGameOver || !state.isHumanMove || state.board[index] !== EMPTY) {
@@ -83,13 +103,28 @@ function model(actions) {
 
     const newGame$ = actions.newGame$.map(_ => _ => seedState());  
     
-    const transform$ = Observable.merge(humanMove$, computerMove$, newGame$);
+    const transform$ = Observable.merge(initState$, humanMove$, computerMove$, newGame$);
 
-    const state$ = transform$
-        .startWith(Scheduler.default, seedState())
-        .scan((state, transform) => transform(state))
-        .delay(0); // INITIALISATION ISSUE!
+    // const state$ = transform$
+    //     .startWith(Scheduler.default, seedState())
+    //     .scan((state, transform) => transform(state))
+    //     .delay(0); // INITIALISATION ISSUE!
         
+    // const state$ = transform$.scan((state, transform) => transform(state));
+        
+    const state$ = transform$
+        .startWith({
+            board: INITIAL_BOARD,
+            humanPiece: CROSS,
+            computerPiece: NOUGHT,
+            isHumanMove: true,
+            isGameOver: false,
+            winningPlayer: null,
+            winningLine: null
+        })
+        .scan((state, transform) => transform(state))
+        .delay(0);
+    
     return state$;
 }
 
@@ -99,6 +134,7 @@ function TicTacToe(sources) {
     const messages = Messages(sources, proxyState$);
     const buttons = Buttons(sources, proxyState$);
     const actions = {
+        init$: new Subject(),
         chosenCell$: board.chosenCell$,
         newGame$: buttons.newGame$,
         request$: new Subject(),
@@ -106,6 +142,7 @@ function TicTacToe(sources) {
     };
     const state$ = model(actions);
     state$.subscribe(proxyState$);
+    actions.init$.onNext();
     return {
         DOM: Observable.combineLatest(board.DOM, messages.DOM, buttons.DOM, (boardVTree, messagesVTree, buttonsVTree) =>
             <div>
