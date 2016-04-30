@@ -1,6 +1,12 @@
 table td {
     width: 100px;
     height: 100px;
+}
+
+table td div {
+    width: 60px;
+    height: 60px;
+    margin: 20px;
     font-size: 32pt;
     vertical-align: middle;
     text-align: center;

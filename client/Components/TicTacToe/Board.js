@@ -13,26 +13,37 @@ const IDS_TO_CELL_INDICES = {
 };
 
 function intent(sources) {
-    const actions = {
-        chosenCell$: sources.DOM.select(".cell").events("click")
+    const click$ = sources.DOM.select(".cell").events("click")
             .map(ev => ev.target.id)
-            .map(id => IDS_TO_CELL_INDICES[id]),
+            .map(id => IDS_TO_CELL_INDICES[id]);
+    const spaceKey$ = sources.DOM.select(".cell").events("keydown")
+            .filter(ev => ev.keyCode === 32)
+            .map(ev => ev.target.id)
+            .map(id => IDS_TO_CELL_INDICES[id]);
+    const actions = {
+        chosenCell$: click$.merge(spaceKey$)
     };
     return actions;
 }
 
 function renderCell(state, id) {
     const index = IDS_TO_CELL_INDICES[id];
-    var classNames = ["cell"];
+    var classNamesTd = [];
+    var classNamesDiv = ["cell"];
     const needsThickRightBorder = index % 3 !== 2; 
     if (needsThickRightBorder) {
-        classNames.push("thickRight");
+        classNamesTd.push("thickRight");
     }
     const needsHightlight = state.winningLine && state.winningLine.includes(index);
     if (needsHightlight) {
-        classNames.push("highlight");
+        classNamesDiv.push("highlight");
     }
-    const vtree$ = <td id={id} className={classNames.join(" ")}>{state.board[index]}</td>;
+    const vtree$ =
+        <td className={classNamesTd.join(" ")}>
+            <div id={id} className={classNamesDiv.join(" ")} tabIndex>
+                {state.board[index]}
+            </div>
+        </td>;
     return vtree$;
 }
 
