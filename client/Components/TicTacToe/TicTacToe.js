@@ -37,6 +37,20 @@ function whoGoesFirst() {
     return Math.random() < 0.5 ? HUMAN_PLAYER : COMPUTER_PLAYER;
 }
 
+function init(_) {
+    const state = {
+        board: INITIAL_BOARD,
+        humanPiece: CROSS,
+        computerPiece: NOUGHT,
+        isHumanMove: null,
+        isStarted: false,
+        isGameOver: false,
+        winningPlayer: null,
+        winningLine: null
+    };
+    return state;
+}
+
 function startNewGame(actions, _) {
     const isHumanMove = whoGoesFirst() == HUMAN_PLAYER;
     const state = {
@@ -44,6 +58,7 @@ function startNewGame(actions, _) {
         humanPiece: CROSS,
         computerPiece: NOUGHT,
         isHumanMove: isHumanMove,
+        isStarted: true,
         isGameOver: false,
         winningPlayer: null,
         winningLine: null
@@ -56,7 +71,7 @@ function startNewGame(actions, _) {
 }
 
 function humanMove(actions, index, state) {
-    if (state.isGameOver || !state.isHumanMove || state.board[index] !== EMPTY) {
+    if (!state.isStarted || state.isGameOver || !state.isHumanMove || state.board[index] !== EMPTY) {
         return state;
     }
     const updatedState = {
@@ -64,6 +79,7 @@ function humanMove(actions, index, state) {
         humanPiece: state.humanPiece,
         computerPiece: state.computerPiece,
         isHumanMove: false,
+        isStarted: true,
         isGameOver: false,
         winningPlayer: null,
         winningLine: null
@@ -79,6 +95,7 @@ function computerMove(responseBody, state) {
         humanPiece: state.humanPiece,
         computerPiece: state.computerPiece,
         isHumanMove: true,
+        isStarted: true,
         isGameOver: responseBody.gameOver,
         winningPlayer: responseBody.winningPlayer || null,
         winningLine: responseBody.winningLine || null
@@ -91,14 +108,15 @@ const curriedHumanMove = R.curry(humanMove);
 const curriedComputerMove = R.curry(computerMove);
 
 function model(actions) {
-    const init$ = actions.init$.map(_ => curriedStartNewGame(actions));
+    const init$ = actions.init$.map(_ => init);
+    const start$ = actions.start$.map(_ => curriedStartNewGame(actions));  
     const newGame$ = actions.newGame$.map(_ => curriedStartNewGame(actions));  
     const humanMove$ = actions.chosenCell$.map(index => curriedHumanMove(actions, index));
     const computerMove$ = actions.response$$
         .mergeAll()
         .delay(DELIBERATE_COMPUTER_MOVE_DELAY)
         .map(response => curriedComputerMove(response.body));
-    const transform$ = Observable.merge(init$, humanMove$, computerMove$, newGame$);
+    const transform$ = Observable.merge(init$, start$, humanMove$, computerMove$, newGame$);
     const state$ = transform$.scan((state, transform) => transform(state), {});
     return state$;
 }
@@ -111,6 +129,7 @@ function TicTacToe(sources, init$) {
     const actions = {
         init$: init$,
         chosenCell$: board.chosenCell$,
+        start$: buttons.start$,
         newGame$: buttons.newGame$,
         request$: new Subject(),
         response$$: sources.HTTP

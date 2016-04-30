@@ -1,5 +1,6 @@
 import {hJSX} from "@cycle/dom";
 
+const CHOOSE_PIECE_MESSAGE = "Click the Start button to begin.";
 const PLAYER1_TURN_MESSAGE = "Your turn. Click an empty square to make your move.";
 const PLAYER2_TURN_MESSAGE = "The computer is thinking...";
 const PLAYER1_WON_MESSAGE = "You won!";
@@ -8,6 +9,10 @@ const DRAW_MESSAGE = "It's a draw!";
 const UNKNOWN_WINNER_MESSAGE = "I r confuse about who won!?";
 
 function selectMessage(state) {
+    
+    if (!state.isStarted) {
+        return CHOOSE_PIECE_MESSAGE;
+    }
     
     if (state.isGameOver) {
         switch (state.winningPlayer) {
@@ -23,7 +28,7 @@ function selectMessage(state) {
 
 function renderMessageRow(state) {
     const message = selectMessage(state);
-    const showSpinner = !state.isGameOver && !state.isHumanMove;
+    const showSpinner = state.isStarted && !state.isGameOver && !state.isHumanMove;
     const spinner = showSpinner ? <img id="spinner" src="spinner.gif" alt="spinner" /> : null; 
     const vtree$ =
         <div className="alert alert-info">
