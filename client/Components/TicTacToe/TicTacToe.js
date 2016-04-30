@@ -1,5 +1,6 @@
 import {Observable, Subject, Scheduler} from "rx";
 import {hJSX} from "@cycle/dom";
+import R from "ramda";
 import Board from "./Board";
 import Messages from "./Messages";
 import Buttons from "./Buttons";
@@ -36,71 +37,69 @@ function whoGoesFirst() {
     return Math.random() < 0.5 ? HUMAN_PLAYER : COMPUTER_PLAYER;
 }
 
-function model(actions) {
-    
-    function startNewGame(_) {
-        const isHumanMove = whoGoesFirst() == HUMAN_PLAYER;
-        const state = {
-            board: INITIAL_BOARD,
-            humanPiece: CROSS,
-            computerPiece: NOUGHT,
-            isHumanMove: isHumanMove,
-            isGameOver: false,
-            winningPlayer: null,
-            winningLine: null
-        };
-        if (!isHumanMove) {
-            const request = makeComputerMoveRequest(state);
-            actions.request$.onNext(request);
-        }
+function startNewGame(actions, _) {
+    const isHumanMove = whoGoesFirst() == HUMAN_PLAYER;
+    const state = {
+        board: INITIAL_BOARD,
+        humanPiece: CROSS,
+        computerPiece: NOUGHT,
+        isHumanMove: isHumanMove,
+        isGameOver: false,
+        winningPlayer: null,
+        winningLine: null
+    };
+    if (!isHumanMove) {
+        const request = makeComputerMoveRequest(state);
+        actions.request$.onNext(request);
+    }
+    return state;
+}
+
+function humanMove(actions, index, state) {
+    if (state.isGameOver || !state.isHumanMove || state.board[index] !== EMPTY) {
         return state;
     }
-    
-    const init$ = actions.init$.map(_ => startNewGame);
-      
-    const humanMove$ = actions.chosenCell$.map(index =>
-        state => {
-            if (state.isGameOver || !state.isHumanMove || state.board[index] !== EMPTY) {
-                return state;
-            }
-            const updatedState = {
-                board: setCharAt(state.board, state.humanPiece, index),
-                humanPiece: state.humanPiece,
-                computerPiece: state.computerPiece,
-                isHumanMove: false,
-                isGameOver: false,
-                winningPlayer: null,
-                winningLine: null
-            };
-            const request = makeComputerMoveRequest(updatedState);
-            actions.request$.onNext(request);
-            return updatedState;
-        });
-        
+    const updatedState = {
+        board: setCharAt(state.board, state.humanPiece, index),
+        humanPiece: state.humanPiece,
+        computerPiece: state.computerPiece,
+        isHumanMove: false,
+        isGameOver: false,
+        winningPlayer: null,
+        winningLine: null
+    };
+    const request = makeComputerMoveRequest(updatedState);
+    actions.request$.onNext(request);
+    return updatedState;
+}
+
+function computerMove(responseBody, state) {
+    const updatedState = {
+        board: responseBody.board,
+        humanPiece: state.humanPiece,
+        computerPiece: state.computerPiece,
+        isHumanMove: true,
+        isGameOver: responseBody.gameOver,
+        winningPlayer: responseBody.winningPlayer || null,
+        winningLine: responseBody.winningLine || null
+    };
+    return updatedState;
+}
+
+const curriedStartNewGame = R.curry(startNewGame);
+const curriedHumanMove = R.curry(humanMove);
+const curriedComputerMove = R.curry(computerMove);
+
+function model(actions) {
+    const init$ = actions.init$.map(_ => curriedStartNewGame(actions));
+    const newGame$ = actions.newGame$.map(_ => curriedStartNewGame(actions));  
+    const humanMove$ = actions.chosenCell$.map(index => curriedHumanMove(actions, index));
     const computerMove$ = actions.response$$
-        .filter(response$ => response$.request.category === "computerMove")
         .mergeAll()
         .delay(DELIBERATE_COMPUTER_MOVE_DELAY)
-        .map(response =>
-            state => {
-                const updatedState = {
-                    board: response.body.board,
-                    humanPiece: state.humanPiece,
-                    computerPiece: state.computerPiece,
-                    isHumanMove: true,
-                    isGameOver: response.body.gameOver,
-                    winningPlayer: response.body.winningPlayer || null,
-                    winningLine: response.body.winningLine || null
-                };
-                return updatedState;
-            });
-
-    const newGame$ = actions.newGame$.map(_ => startNewGame);  
-    
+        .map(response => curriedComputerMove(response.body));
     const transform$ = Observable.merge(init$, humanMove$, computerMove$, newGame$);
-
     const state$ = transform$.scan((state, transform) => transform(state), {});
-    
     return state$;
 }
 
