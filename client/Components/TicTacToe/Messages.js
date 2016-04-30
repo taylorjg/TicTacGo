@@ -6,29 +6,33 @@ const PLAYER2_TURN_MESSAGE = "The computer is thinking...";
 const PLAYER1_WON_MESSAGE = "You won!";
 const PLAYER2_WON_MESSAGE = "The computer won!";
 const DRAW_MESSAGE = "It's a draw!";
-const UNKNOWN_WINNER_MESSAGE = "I r confuse about who won!?";
+const UNKNOWN_WINNER_MESSAGE = "I am confused about who won!?";
+const UNNOWN_GAME_STATE_MESSAGE = "I am confused about the state of the game!?";
 
 function selectMessage(state) {
     
-    if (!state.isStarted) {
-        return CHOOSE_PIECE_MESSAGE;
+    switch (state.gameState) {
+        case 0: // GAME_STATE_NOT_STARTED
+            return CHOOSE_PIECE_MESSAGE;
+        case 1: // GAME_STATE_HUMAN_MOVE
+            return PLAYER1_TURN_MESSAGE;
+        case 2: // GAME_STATE_COMPUTER_MOVE
+            return PLAYER2_TURN_MESSAGE;
+        case 3: // GAME_STATE_GAME_OVER
+            switch (state.winningPlayer) {
+                case 1: return PLAYER1_WON_MESSAGE;
+                case 2: return PLAYER2_WON_MESSAGE;
+                case 3: return DRAW_MESSAGE;
+                default: return UNKNOWN_WINNER_MESSAGE;
+            }
+        default:
+            return "";
     }
-    
-    if (state.isGameOver) {
-        switch (state.winningPlayer) {
-            case 1: return PLAYER1_WON_MESSAGE;
-            case 2: return PLAYER2_WON_MESSAGE;
-            case 3: return DRAW_MESSAGE;
-            default: return UNKNOWN_WINNER_MESSAGE;
-        }
-    }
-    
-    return state.isHumanMove ? PLAYER1_TURN_MESSAGE : PLAYER2_TURN_MESSAGE;
 }
 
 function renderMessageRow(state) {
     const message = selectMessage(state);
-    const showSpinner = state.isStarted && !state.isGameOver && !state.isHumanMove;
+    const showSpinner = state.gameState === 2; // GAME_STATE_COMPUTER_MOVE 
     const spinner = showSpinner ? <img id="spinner" src="spinner.gif" alt="spinner" /> : null; 
     const vtree$ =
         <div className="alert alert-info">

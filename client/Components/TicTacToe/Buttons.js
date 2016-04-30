@@ -9,10 +9,10 @@ function intent(sources) {
 }
 
 function renderButtonRow(state) {
-    const startButton = state.isStarted
-        ? null
-        : <button type="button" className="start btn btn-sm btn-primary">Start</button>;
-    const newGameButton = state.isGameOver
+    const startButton = state.gameState === 0 /* GAME_STATE_NOT_STARTED */
+        ? <button type="button" className="start btn btn-sm btn-primary">Start</button>
+        : null;
+    const newGameButton = state.gameState === 3 /* GAME_STATE_GAME_OVER */
         ? <button type="button" className="newGame btn btn-sm btn-primary">New Game</button>
         : null;
     const vtree$ = <div>{startButton}{newGameButton}</div>;

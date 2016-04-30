@@ -5,6 +5,10 @@ import Board from "./Board";
 import Messages from "./Messages";
 import Buttons from "./Buttons";
 
+const GAME_STATE_NOT_STARTED = 0;
+const GAME_STATE_HUMAN_MOVE = 1;
+const GAME_STATE_COMPUTER_MOVE = 2;
+const GAME_STATE_GAME_OVER = 3;
 const HUMAN_PLAYER = 1;
 const COMPUTER_PLAYER = 2;
 const NOUGHT = "O"; 
@@ -42,9 +46,7 @@ function init(_) {
         board: INITIAL_BOARD,
         humanPiece: CROSS,
         computerPiece: NOUGHT,
-        isHumanMove: null,
-        isStarted: false,
-        isGameOver: false,
+        gameState: GAME_STATE_NOT_STARTED,
         winningPlayer: null,
         winningLine: null
     };
@@ -57,9 +59,7 @@ function startNewGame(actions, _) {
         board: INITIAL_BOARD,
         humanPiece: CROSS,
         computerPiece: NOUGHT,
-        isHumanMove: isHumanMove,
-        isStarted: true,
-        isGameOver: false,
+        gameState: isHumanMove ? GAME_STATE_HUMAN_MOVE : GAME_STATE_COMPUTER_MOVE,
         winningPlayer: null,
         winningLine: null
     };
@@ -71,16 +71,17 @@ function startNewGame(actions, _) {
 }
 
 function humanMove(actions, index, state) {
-    if (!state.isStarted || state.isGameOver || !state.isHumanMove || state.board[index] !== EMPTY) {
+    if (state.gameState !== GAME_STATE_HUMAN_MOVE) {
+        return state;
+    }
+    if (state.board[index] !== EMPTY) {
         return state;
     }
     const updatedState = {
         board: setCharAt(state.board, state.humanPiece, index),
         humanPiece: state.humanPiece,
         computerPiece: state.computerPiece,
-        isHumanMove: false,
-        isStarted: true,
-        isGameOver: false,
+        gameState: GAME_STATE_COMPUTER_MOVE,
         winningPlayer: null,
         winningLine: null
     };
@@ -94,9 +95,7 @@ function computerMove(responseBody, state) {
         board: responseBody.board,
         humanPiece: state.humanPiece,
         computerPiece: state.computerPiece,
-        isHumanMove: true,
-        isStarted: true,
-        isGameOver: responseBody.gameOver,
+        gameState: responseBody.gameOver ? GAME_STATE_GAME_OVER : GAME_STATE_HUMAN_MOVE,
         winningPlayer: responseBody.winningPlayer || null,
         winningLine: responseBody.winningLine || null
     };
