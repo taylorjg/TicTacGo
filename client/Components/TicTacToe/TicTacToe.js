@@ -104,13 +104,13 @@ function model(actions) {
     return state$;
 }
 
-function TicTacToe(sources) {
+function TicTacToe(sources, init$) {
     const proxyState$ = new Subject();
     const board = Board(sources, proxyState$);
     const messages = Messages(sources, proxyState$);
     const buttons = Buttons(sources, proxyState$);
     const actions = {
-        init$: Observable.timer(0),
+        init$: init$,
         chosenCell$: board.chosenCell$,
         newGame$: buttons.newGame$,
         request$: new Subject(),

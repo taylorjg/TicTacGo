@@ -6,8 +6,9 @@ import isolate from "@cycle/isolate";
 import TicTacToe from "./Components/TicTacToe/TicTacToe";
 
 function main(sources) {
-    const ticTacToe1 = isolate(TicTacToe)(sources);
-    const ticTacToe2 = isolate(TicTacToe)(sources);
+    const init$ = Observable.timer(0);
+    const ticTacToe1 = isolate(TicTacToe)(sources, init$);
+    const ticTacToe2 = isolate(TicTacToe)(sources, init$);
     return {
         DOM: Observable.combineLatest(ticTacToe1.DOM, ticTacToe2.DOM, (vtree1, vtree2) =>
             <div className="container">
