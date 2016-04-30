@@ -1,4 +1,4 @@
-import {Observable, Subject, Scheduler} from "rx";
+import {Observable, Subject} from "rx";
 import {hJSX} from "@cycle/dom";
 import R from "ramda";
 import Board from "./Board";

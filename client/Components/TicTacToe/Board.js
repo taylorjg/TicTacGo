@@ -1,3 +1,4 @@
+import {Observable} from "rx";
 import {hJSX} from "@cycle/dom";
 
 const IDS_TO_CELL_INDICES = {
@@ -13,15 +14,12 @@ const IDS_TO_CELL_INDICES = {
 };
 
 function intent(sources) {
-    const click$ = sources.DOM.select(".cell").events("click")
-            .map(ev => ev.target.id)
-            .map(id => IDS_TO_CELL_INDICES[id]);
-    const spaceKey$ = sources.DOM.select(".cell").events("keydown")
-            .filter(ev => ev.keyCode === 32)
-            .map(ev => ev.target.id)
-            .map(id => IDS_TO_CELL_INDICES[id]);
+    const click$ = sources.DOM.select(".cell").events("click");
+    const spaceKey$ = sources.DOM.select(".cell").events("keydown").filter(ev => ev.keyCode === 32);
     const actions = {
-        chosenCell$: click$.merge(spaceKey$)
+        chosenCell$: Observable.merge(click$, spaceKey$)
+            .map(ev => ev.target.id)
+            .map(id => IDS_TO_CELL_INDICES[id])
     };
     return actions;
 }
