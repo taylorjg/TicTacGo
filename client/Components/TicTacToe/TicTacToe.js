@@ -38,7 +38,7 @@ function whoGoesFirst() {
 
 function model(actions) {
     
-    function seedState() {
+    function startNewGame(_) {
         const isHumanMove = whoGoesFirst() == HUMAN_PLAYER;
         const state = {
             board: INITIAL_BOARD,
@@ -56,13 +56,7 @@ function model(actions) {
         return state;
     }
     
-    const initState$ = actions.init$.map(_ => {
-        console.log("Inside actions.init$.map");
-        return _ => {
-            console.log("Inside actions.init$.map inner");
-            return seedState();
-        }
-    });
+    const init$ = actions.init$.map(_ => startNewGame);
       
     const humanMove$ = actions.chosenCell$.map(index =>
         state => {
@@ -101,29 +95,11 @@ function model(actions) {
                 return updatedState;
             });
 
-    const newGame$ = actions.newGame$.map(_ => _ => seedState());  
+    const newGame$ = actions.newGame$.map(_ => startNewGame);  
     
-    const transform$ = Observable.merge(initState$, humanMove$, computerMove$, newGame$);
+    const transform$ = Observable.merge(init$, humanMove$, computerMove$, newGame$);
 
-    // const state$ = transform$
-    //     .startWith(Scheduler.default, seedState())
-    //     .scan((state, transform) => transform(state))
-    //     .delay(0); // INITIALISATION ISSUE!
-        
-    // const state$ = transform$.scan((state, transform) => transform(state));
-        
-    const state$ = transform$
-        .startWith({
-            board: INITIAL_BOARD,
-            humanPiece: CROSS,
-            computerPiece: NOUGHT,
-            isHumanMove: true,
-            isGameOver: false,
-            winningPlayer: null,
-            winningLine: null
-        })
-        .scan((state, transform) => transform(state))
-        .delay(0);
+    const state$ = transform$.scan((state, transform) => transform(state), {});
     
     return state$;
 }
@@ -134,7 +110,7 @@ function TicTacToe(sources) {
     const messages = Messages(sources, proxyState$);
     const buttons = Buttons(sources, proxyState$);
     const actions = {
-        init$: new Subject(),
+        init$: Observable.timer(0),
         chosenCell$: board.chosenCell$,
         newGame$: buttons.newGame$,
         request$: new Subject(),
@@ -142,7 +118,6 @@ function TicTacToe(sources) {
     };
     const state$ = model(actions);
     state$.subscribe(proxyState$);
-    actions.init$.onNext();
     return {
         DOM: Observable.combineLatest(board.DOM, messages.DOM, buttons.DOM, (boardVTree, messagesVTree, buttonsVTree) =>
             <div>
