@@ -4,13 +4,15 @@ import R from "ramda";
 import Board from "./Board";
 import Messages from "./Messages";
 import Buttons from "./Buttons";
+import {
+    GAME_STATE_NOT_STARTED,
+    GAME_STATE_HUMAN_MOVE,
+    GAME_STATE_COMPUTER_MOVE,
+    GAME_STATE_GAME_OVER,
+    HUMAN_PLAYER,
+    COMPUTER_PLAYER
+} from "./constants";
 
-const GAME_STATE_NOT_STARTED = 0;
-const GAME_STATE_HUMAN_MOVE = 1;
-const GAME_STATE_COMPUTER_MOVE = 2;
-const GAME_STATE_GAME_OVER = 3;
-const HUMAN_PLAYER = 1;
-const COMPUTER_PLAYER = 2;
 const NOUGHT = "O"; 
 const CROSS = "X";
 const EMPTY = " ";
