@@ -38,8 +38,9 @@ function getMessage(state) {
                 case DRAW: return DRAW_MESSAGE;
                 default: return UNKNOWN_WINNER_MESSAGE;
             }
+            
         default:
-            return "";
+            return UNKNOWN_GAME_STATE_MESSAGE;
     }
 }
 
@@ -49,7 +50,8 @@ function renderMessageRow(state) {
     const spinner = showSpinner ? <img id="spinner" src="spinner.gif" alt="spinner" /> : null; 
     const vtree$ =
         <div className="alert alert-info">
-            <span>{message}</span><span>{spinner}</span>
+            <span>{message}</span>
+            <span>{spinner}</span>
         </div>
     return vtree$;
 }
