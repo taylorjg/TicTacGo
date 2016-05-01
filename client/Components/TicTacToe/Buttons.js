@@ -25,10 +25,10 @@ function view(state$) {
     return vtree$;
 }
 
-function Buttons(sources, state$) {
+function Buttons(sources) {
     const actions = intent(sources);
     return {
-        DOM: view(state$),
+        DOM: view(sources.state$),
         start$: actions.start$,
         newGame$: actions.newGame$
     };

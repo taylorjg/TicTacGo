@@ -61,9 +61,9 @@ function view(state$) {
     return vtree$;
 }
 
-function Messages(sources, state$) {
+function Messages(sources) {
     return {
-        DOM: view(state$)
+        DOM: view(sources.state$)
     };
 }
 

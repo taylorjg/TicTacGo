@@ -122,11 +122,13 @@ function model(actions) {
     return state$;
 }
 
-function TicTacToe(sources, init$) {
+function TicTacToe(sources, init$, props$) {
     const proxyState$ = new Subject();
-    const board = Board(sources, proxyState$);
-    const messages = Messages(sources, proxyState$);
-    const buttons = Buttons(sources, proxyState$);
+    sources.props$ = props$;
+    sources.state$ = proxyState$;
+    const board = Board(sources);
+    const messages = Messages(sources);
+    const buttons = Buttons(sources);
     const actions = {
         init$: init$,
         selectedCell$: board.selectedCell$,

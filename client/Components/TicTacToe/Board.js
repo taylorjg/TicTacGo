@@ -100,11 +100,11 @@ function view(state$, cellToFocus$) {
     return vtree$;
 } 
 
-function Board(sources, state$) {
+function Board(sources) {
     const actions = intent(sources);
     const cellToFocus$ = model(actions);
     return {
-        DOM: view(state$, cellToFocus$),
+        DOM: view(sources.state$, cellToFocus$),
         selectedCell$: actions.selectedCell$
     };
 }
