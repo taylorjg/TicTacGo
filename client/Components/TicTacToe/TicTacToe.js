@@ -112,7 +112,7 @@ function model(actions) {
     const init$ = actions.init$.map(_ => init);
     const start$ = actions.start$.map(_ => curriedStartNewGame(actions));  
     const newGame$ = actions.newGame$.map(_ => curriedStartNewGame(actions));  
-    const humanMove$ = actions.chosenCell$.map(index => curriedHumanMove(actions, index));
+    const humanMove$ = actions.selectedCell$.map(index => curriedHumanMove(actions, index));
     const computerMove$ = actions.response$$
         .mergeAll()
         .delay(DELIBERATE_COMPUTER_MOVE_DELAY)
@@ -129,7 +129,7 @@ function TicTacToe(sources, init$) {
     const buttons = Buttons(sources, proxyState$);
     const actions = {
         init$: init$,
-        chosenCell$: board.chosenCell$,
+        selectedCell$: board.selectedCell$,
         start$: buttons.start$,
         newGame$: buttons.newGame$,
         request$: new Subject(),

@@ -9,8 +9,8 @@ import {
     DRAW
 } from "./constants";
 
-const START_MESSAGE = "Click the Start button to begin.";
-const HUMAN_MOVE_MESSAGE = "Your turn. Click an empty square to make your move.";
+const START_MESSAGE = "Use the Start button to begin.";
+const HUMAN_MOVE_MESSAGE = "Your turn. Select an empty square to make your move.";
 const COMPUTER_MOVE_MESSAGE = "The computer is thinking...";
 const HUMAN_WON_MESSAGE = "You won!";
 const COMPUTER_WON_MESSAGE = "The computer won!";
