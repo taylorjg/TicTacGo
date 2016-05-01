@@ -1,5 +1,6 @@
 import {Observable, Subject} from "rx";
 import {hJSX} from "@cycle/dom";
+import R from "ramda";
 
 const IDS_TO_CELL_INDICES = {
     "cell00": 0,
@@ -49,7 +50,7 @@ function model(actions) {
     return Observable.merge(l$, u$, r$, d$).startWith(-1);
 }
 
-function renderCell(state, id, cellToFocus) {
+function renderCell(state, props, cellToFocus, id) {
     const index = IDS_TO_CELL_INDICES[id];
     var classNamesTd = [];
     var classNamesDiv = ["cell"];
@@ -64,7 +65,7 @@ function renderCell(state, id, cellToFocus) {
     const focusThisCell = index === cellToFocus;
     const vtree$ =
         <td className={classNamesTd.join(" ")}>
-            <div id={id} className={classNamesDiv.join(" ")} tabIndex>
+            <div id={id} className={classNamesDiv.join(" ")} tabIndex={props.firstTabIndex + index}>
                 {state.board[index]}
             </div>
         </td>;
@@ -76,35 +77,42 @@ function renderCell(state, id, cellToFocus) {
     return vtree$;
 }
 
-function view(state$, cellToFocus$) {
-    const vtree$ = Observable.combineLatest(state$, cellToFocus$, (state, cellToFocus) =>
+const curriedRenderCell = R.curry(renderCell);
+
+function renderBoard(state, props, cellToFocus) {
+    const partiallyAppliedRenderCell = curriedRenderCell(state, props, cellToFocus);
+    const vtree$ =
         <table id="board">
             <tbody>
                 <tr className="thickBottom">
-                    {renderCell(state, "cell00", cellToFocus)}
-                    {renderCell(state, "cell01", cellToFocus)}
-                    {renderCell(state, "cell02", cellToFocus)}
+                    {partiallyAppliedRenderCell("cell00")}
+                    {partiallyAppliedRenderCell("cell01")}
+                    {partiallyAppliedRenderCell("cell02")}
                 </tr>
                 <tr className="thickBottom">
-                    {renderCell(state, "cell10", cellToFocus)}
-                    {renderCell(state, "cell11", cellToFocus)}
-                    {renderCell(state, "cell12", cellToFocus)}
+                    {partiallyAppliedRenderCell("cell10")}
+                    {partiallyAppliedRenderCell("cell11")}
+                    {partiallyAppliedRenderCell("cell12")}
                 </tr>
                 <tr>
-                    {renderCell(state, "cell20", cellToFocus)}
-                    {renderCell(state, "cell21", cellToFocus)}
-                    {renderCell(state, "cell22", cellToFocus)}
+                    {partiallyAppliedRenderCell("cell20")}
+                    {partiallyAppliedRenderCell("cell21")}
+                    {partiallyAppliedRenderCell("cell22")}
                 </tr>
             </tbody>
-        </table>);
+        </table>;
     return vtree$;
+}
+
+function view(state$, props$, cellToFocus$) {
+    return Observable.combineLatest(state$, props$, cellToFocus$, renderBoard);
 } 
 
 function Board(sources) {
     const actions = intent(sources);
     const cellToFocus$ = model(actions);
     return {
-        DOM: view(sources.state$, cellToFocus$),
+        DOM: view(sources.state$, sources.props$, cellToFocus$),
         selectedCell$: actions.selectedCell$
     };
 }

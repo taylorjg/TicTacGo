@@ -7,8 +7,8 @@ import TicTacToe from "./Components/TicTacToe/TicTacToe";
 
 function main(sources) {
     const init$ = Observable.timer(0);
-    const props1$ = Observable.just({ firstTabIndex: 0, initialFocus: true });
-    const props2$ = Observable.just({ firstTabIndex: 100, initialFocus: false });
+    const props1$ = Observable.just({ firstTabIndex: 1000, initialFocus: true });
+    const props2$ = Observable.just({ firstTabIndex: 1100, initialFocus: false });
     const ticTacToe1 = isolate(TicTacToe)(sources, init$, props1$);
     const ticTacToe2 = isolate(TicTacToe)(sources, init$, props2$);
     return {
