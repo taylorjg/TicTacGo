@@ -14,30 +14,29 @@ const IDS_TO_CELL_INDICES = {
     "cell22": 8
 };
 
-const LEFT_ARROW = 37;
-const UP_ARROW = 38;
-const RIGHT_ARROW = 39;
-const DOWN_ARROW = 40;
+const SPACE_KEY = 32;
+const LEFT_ARROW_KEY = 37;
+const UP_ARROW_KEY = 38;
+const RIGHT_ARROW_KEY = 39;
+const DOWN_ARROW_KEY = 40;
+
+function filteredKeydown(DOM, keyCode) {
+    return DOM.select(".cell").events("keydown").filter(ev => ev.keyCode === keyCode);
+}
+
+function eventToCellIndex(event$) {
+    return event$.map(ev => IDS_TO_CELL_INDICES[ev.target.id]);
+}
 
 function intent(sources) {
     const click$ = sources.DOM.select(".cell").events("click");
-    const spaceKey$ = sources.DOM.select(".cell").events("keydown").filter(ev => ev.keyCode === 32);
+    const spaceKey$ = filteredKeydown(sources.DOM, SPACE_KEY);
     const actions = {
-        selectedCell$: Observable.merge(click$, spaceKey$)
-            .map(ev => ev.target.id)
-            .map(id => IDS_TO_CELL_INDICES[id]),
-        leftKey$: sources.DOM.select(".cell").events("keydown").filter(ev => ev.keyCode === LEFT_ARROW)
-            .map(ev => ev.target.id)
-            .map(id => IDS_TO_CELL_INDICES[id]),
-        upKey$: sources.DOM.select(".cell").events("keydown").filter(ev => ev.keyCode === UP_ARROW)
-            .map(ev => ev.target.id)
-            .map(id => IDS_TO_CELL_INDICES[id]),
-        rightKey$: sources.DOM.select(".cell").events("keydown").filter(ev => ev.keyCode === RIGHT_ARROW)
-            .map(ev => ev.target.id)
-            .map(id => IDS_TO_CELL_INDICES[id]),
-        downKey$: sources.DOM.select(".cell").events("keydown").filter(ev => ev.keyCode === DOWN_ARROW)
-            .map(ev => ev.target.id)
-            .map(id => IDS_TO_CELL_INDICES[id])
+        selectedCell$: eventToCellIndex(Observable.merge(click$, spaceKey$)),
+        leftKey$: eventToCellIndex(filteredKeydown(sources.DOM, LEFT_ARROW_KEY)),
+        upKey$: eventToCellIndex(filteredKeydown(sources.DOM, UP_ARROW_KEY)),
+        rightKey$: eventToCellIndex(filteredKeydown(sources.DOM, RIGHT_ARROW_KEY)),
+        downKey$: eventToCellIndex(filteredKeydown(sources.DOM, DOWN_ARROW_KEY))
     };
     return actions;
 }
@@ -62,18 +61,19 @@ function renderCell(state, props, cellToFocus, id) {
     if (needsHightlight) {
         classNamesDiv.push("highlight");
     }
-    const focusThisCell = index === cellToFocus;
     const vtree$ =
         <td className={classNamesTd.join(" ")}>
             <div id={id} className={classNamesDiv.join(" ")} tabIndex={props.firstTabIndex + index}>
                 {state.board[index]}
             </div>
         </td>;
-    // TODO: create a new driver to set focus to a control that
-    //       will be equivalent to doing the following:
-    // if (focusThisCell) {
-    //     document.getElementById(id).focus();
-    // }
+        
+    const focusThisCell = index === cellToFocus;
+    // TODO: create a new driver to set focus to a control that will be equivalent to doing the following:
+    if (focusThisCell) {
+        document.getElementById(id).focus();
+    }
+    
     return vtree$;
 }
 
