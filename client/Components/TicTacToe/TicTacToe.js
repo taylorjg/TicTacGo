@@ -65,7 +65,7 @@ function startNewGame(actions, _) {
         winningPlayer: null,
         winningLine: null
     };
-    if (!isHumanMove) {
+    if (state.gameState === GAME_STATE_COMPUTER_MOVE) {
         const request = makeComputerMoveRequest(state);
         actions.request$.onNext(request);
     }
