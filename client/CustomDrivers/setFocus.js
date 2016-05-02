@@ -5,16 +5,32 @@ function isolateSource(source, scope) {
 }
 
 function isolateSink(sink, scope) {
-    return sink;
+    return sink.map(selector => {
+        return {
+            selector: selector,
+            scope: scope
+        };
+    });
 }
 
 function setFocusDriver(selector$) {    
     
     selector$.delay(0).subscribe(selector => {
-        const elem = document.querySelector(selector);
-        console.log("elem", elem);
-        if (elem) {
-            elem.focus();
+        if (selector.scope) {
+            const rootSelector = `.cycle-scope-${selector.scope}`;
+            const root = document.querySelector(rootSelector);
+            if (root) {
+                const elem = root.querySelector(selector.selector);
+                if (elem) {
+                    elem.focus();
+                }
+            }
+        }
+        else {
+            const elem = document.querySelector(selector);
+            if (elem) {
+                elem.focus();
+            }
         }
     });
     
