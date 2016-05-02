@@ -148,7 +148,7 @@ function TicTacToe(sources, init$, props$) {
                 {buttonsVTree}
             </div>),
         HTTP: actions.request$,
-        SetFocus: board.SetFocus
+        SetFocus: board.setFocus$
     };
 }
 

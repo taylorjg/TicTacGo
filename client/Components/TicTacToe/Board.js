@@ -122,7 +122,7 @@ function Board(sources) {
     return {
         DOM: view(sources.state$, sources.props$),
         selectedCell$: actions.selectedCell$,
-        SetFocus: actions.setFocus$
+        setFocus$: actions.setFocus$
     };
 }
 
