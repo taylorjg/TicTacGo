@@ -5,7 +5,16 @@ import {GAME_STATE_NOT_STARTED, GAME_STATE_GAME_OVER} from "./constants";
 function intent(sources) {
     const actions = {
         start$: sources.DOM.select(".start").events("click"),
-        newGame$: sources.DOM.select(".newGame").events("click")
+        newGame$: sources.DOM.select(".newGame").events("click"),
+        setFocusSelector$: Observable.combineLatest(sources.state$, sources.props$, (state, props) => {
+            if (state.gameState === GAME_STATE_NOT_STARTED && props.initialFocus) {
+                return ".start";
+            }
+            if (state.gameState === GAME_STATE_GAME_OVER) {
+                return ".newGame";
+            }
+            return null;
+        }).filter(x => x !== null)
     };
     return actions;
 }
@@ -27,19 +36,11 @@ function view(sources) {
 
 function Buttons(sources) {
     const actions = intent(sources);
-    
-    const setFocusSelector$ = new Subject();
-    sources.state$.subscribe(state => {
-        if (state.gameState === GAME_STATE_GAME_OVER) {
-            setFocusSelector$.onNext(".newGame");
-        }
-    });
-    
     return {
         DOM: view(sources),
         start$: actions.start$,
         newGame$: actions.newGame$,
-        setFocusSelector$
+        setFocusSelector$: actions.setFocusSelector$
     };
 }
 
