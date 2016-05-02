@@ -15,22 +15,17 @@ function isolateSink(sink, scope) {
 
 function setFocusDriver(selector$) {    
     
-    selector$.delay(0).subscribe(selector => {
-        if (selector.scope) {
-            const rootSelector = `.cycle-scope-${selector.scope}`;
-            const root = document.querySelector(rootSelector);
-            if (root) {
-                const elem = root.querySelector(selector.selector);
-                if (elem) {
-                    elem.focus();
-                }
-            }
+    selector$.delay(0).subscribe(item => {
+        let root = document;
+        let selector = item;
+        if (item.scope) {
+            const rootSelector = `.cycle-scope-${item.scope}`;
+            root = document.querySelector(rootSelector);
+            selector = item.selector;
         }
-        else {
-            const elem = document.querySelector(selector);
-            if (elem) {
-                elem.focus();
-            }
+        const elem = root.querySelector(selector);
+        if (elem) {
+            elem.focus();
         }
     });
     
