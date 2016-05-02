@@ -1,4 +1,4 @@
-import {Observable} from "rx";
+import {Observable, Subject} from "rx";
 import {hJSX} from "@cycle/dom";
 import {GAME_STATE_NOT_STARTED, GAME_STATE_GAME_OVER} from "./constants";
 
@@ -27,10 +27,19 @@ function view(sources) {
 
 function Buttons(sources) {
     const actions = intent(sources);
+    
+    const setFocusSelector$ = new Subject();
+    sources.state$.subscribe(state => {
+        if (state.gameState === GAME_STATE_GAME_OVER) {
+            setFocusSelector$.onNext(".newGame");
+        }
+    });
+    
     return {
         DOM: view(sources),
         start$: actions.start$,
-        newGame$: actions.newGame$
+        newGame$: actions.newGame$,
+        setFocusSelector$
     };
 }
 

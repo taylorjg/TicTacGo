@@ -10,8 +10,9 @@ function isolateSink(sink, scope) {
 
 function setFocusDriver(selector$) {    
     
-    selector$.subscribe(selector => {
+    selector$.delay(0).subscribe(selector => {
         const elem = document.querySelector(selector);
+        console.log("elem", elem);
         if (elem) {
             elem.focus();
         }
