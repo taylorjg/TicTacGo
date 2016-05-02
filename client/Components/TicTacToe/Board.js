@@ -2,7 +2,7 @@ import {Observable, Subject} from "rx";
 import {hJSX} from "@cycle/dom";
 import R from "ramda";
 
-const IDS_TO_CELL_INDICES = {
+const IDS_TO_INDICES = {
     "cell00": 0,
     "cell01": 1,
     "cell02": 2,
@@ -14,43 +14,59 @@ const IDS_TO_CELL_INDICES = {
     "cell22": 8
 };
 
+const INDICES_TO_IDS = {
+    0: "cell00",
+    1: "cell01",
+    2: "cell02",
+    3: "cell10",
+    4: "cell11",
+    5: "cell12",
+    6: "cell20",
+    7: "cell21",
+    8: "cell22"
+};
+
 const SPACE_KEY = 32;
 const LEFT_ARROW_KEY = 37;
 const UP_ARROW_KEY = 38;
 const RIGHT_ARROW_KEY = 39;
 const DOWN_ARROW_KEY = 40;
 
+const goLeft = index => index % 3 !== 0 ? index - 1 : -1;
+const goUp = index => index > 2 ? index - 3 : -1;
+const goRight = index => index % 3 !== 2 ? index + 1 : -1;
+const goDown = index => index < 6 ? index + 3 : -1;
+
 function filteredKeydown(DOM, keyCode) {
     return DOM.select(".cell").events("keydown").filter(ev => ev.keyCode === keyCode);
 }
 
 function eventToCellIndex(event$) {
-    return event$.map(ev => IDS_TO_CELL_INDICES[ev.target.id]);
+    return event$.map(ev => IDS_TO_INDICES[ev.target.id]);
+}
+
+function navigateOnKeydown(sources, keyCode, direction) {
+    return eventToCellIndex(filteredKeydown(sources.DOM, keyCode)).map(direction);
 }
 
 function intent(sources) {
     const click$ = sources.DOM.select(".cell").events("click");
     const spaceKey$ = filteredKeydown(sources.DOM, SPACE_KEY);
+    const navigateLeft$ = navigateOnKeydown(sources, LEFT_ARROW_KEY, goLeft);
+    const navigateUp$ = navigateOnKeydown(sources, UP_ARROW_KEY, goUp);
+    const navigateRight$ = navigateOnKeydown(sources, RIGHT_ARROW_KEY, goRight);
+    const navigateDown$ = navigateOnKeydown(sources, DOWN_ARROW_KEY, goDown);
     const actions = {
         selectedCell$: eventToCellIndex(Observable.merge(click$, spaceKey$)),
-        leftKey$: eventToCellIndex(filteredKeydown(sources.DOM, LEFT_ARROW_KEY)),
-        upKey$: eventToCellIndex(filteredKeydown(sources.DOM, UP_ARROW_KEY)),
-        rightKey$: eventToCellIndex(filteredKeydown(sources.DOM, RIGHT_ARROW_KEY)),
-        downKey$: eventToCellIndex(filteredKeydown(sources.DOM, DOWN_ARROW_KEY))
+        setFocus$: Observable.merge(navigateLeft$, navigateUp$, navigateRight$, navigateDown$)
+            .filter(index => index >= 0)
+            .map(index => INDICES_TO_IDS[index]) 
     };
     return actions;
 }
 
-function model(actions) {
-    const l$ = actions.leftKey$.map(index => index % 3 !== 0 ? index - 1 : -1); 
-    const u$ = actions.upKey$.map(index => index > 2 ? index - 3 : -1); 
-    const r$ = actions.rightKey$.map(index => index % 3 !== 2 ? index + 1 : -1); 
-    const d$ = actions.downKey$.map(index => index < 6 ? index + 3 : -1);
-    return Observable.merge(l$, u$, r$, d$).startWith(-1);
-}
-
-function renderCell(state, props, cellToFocus, id) {
-    const index = IDS_TO_CELL_INDICES[id];
+function renderCell(state, props, id) {
+    const index = IDS_TO_INDICES[id];
     var classNamesTd = [];
     var classNamesDiv = ["cell"];
     const needsThickRightBorder = index % 3 !== 2; 
@@ -67,20 +83,13 @@ function renderCell(state, props, cellToFocus, id) {
                 {state.board[index]}
             </div>
         </td>;
-        
-    const focusThisCell = index === cellToFocus;
-    // TODO: create a new driver to set focus to a control that will be equivalent to doing the following:
-    if (focusThisCell) {
-        document.getElementById(id).focus();
-    }
-    
     return vtree$;
 }
 
 const curriedRenderCell = R.curry(renderCell);
 
-function renderBoard(state, props, cellToFocus) {
-    const partiallyAppliedRenderCell = curriedRenderCell(state, props, cellToFocus);
+function renderBoard(state, props) {
+    const partiallyAppliedRenderCell = curriedRenderCell(state, props);
     const vtree$ =
         <table id="board">
             <tbody>
@@ -104,16 +113,16 @@ function renderBoard(state, props, cellToFocus) {
     return vtree$;
 }
 
-function view(state$, props$, cellToFocus$) {
-    return Observable.combineLatest(state$, props$, cellToFocus$, renderBoard);
+function view(state$, props$) {
+    return Observable.combineLatest(state$, props$, renderBoard);
 } 
 
 function Board(sources) {
     const actions = intent(sources);
-    const cellToFocus$ = model(actions);
     return {
-        DOM: view(sources.state$, sources.props$, cellToFocus$),
-        selectedCell$: actions.selectedCell$
+        DOM: view(sources.state$, sources.props$),
+        selectedCell$: actions.selectedCell$,
+        SetFocus: actions.setFocus$
     };
 }
 

@@ -19,13 +19,25 @@ function main(sources) {
                     <div className="col-md-6">{vtree2}</div>
                 </div>
             </div>),
-        HTTP: Observable.merge(ticTacToe1.HTTP, ticTacToe2.HTTP)
+        HTTP: Observable.merge(ticTacToe1.HTTP, ticTacToe2.HTTP),
+        SetFocus: Observable.merge(ticTacToe1.SetFocus, ticTacToe2.SetFocus)
     };
 }
 
 const drivers = {
     DOM: makeDOMDriver("#app"),
-    HTTP: makeHTTPDriver()
+    HTTP: makeHTTPDriver(),
+    SetFocus: function(id$) {    
+        id$.subscribe(id => {
+            const elem = document.getElementById(id);
+            if (elem) {
+                elem.focus();
+            }
+        });
+        const source = Observable.empty();
+        source.isolateSource = s => s;
+        return source;
+    }    
 };
 
 run(main, drivers);
