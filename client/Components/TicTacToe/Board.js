@@ -58,9 +58,10 @@ function intent(sources) {
     const navigateDown$ = navigateOnKeydown(sources, DOWN_ARROW_KEY, goDown);
     const actions = {
         selectedCell$: eventToCellIndex(Observable.merge(click$, spaceKey$)),
-        setFocus$: Observable.merge(navigateLeft$, navigateUp$, navigateRight$, navigateDown$)
+        setFocusSelector$: Observable.merge(navigateLeft$, navigateUp$, navigateRight$, navigateDown$)
             .filter(index => index >= 0)
-            .map(index => INDICES_TO_IDS[index]) 
+            .map(index => INDICES_TO_IDS[index])
+            .map(id => `#${id}`) 
     };
     return actions;
 }
@@ -122,7 +123,7 @@ function Board(sources) {
     return {
         DOM: view(sources.state$, sources.props$),
         selectedCell$: actions.selectedCell$,
-        setFocus$: actions.setFocus$
+        setFocusSelector$: actions.setFocusSelector$
     };
 }
 

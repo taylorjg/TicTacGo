@@ -8,10 +8,10 @@ function isolateSink(sink, scope) {
     return sink;
 }
 
-function setFocusDriver(id$) {    
+function setFocusDriver(selector$) {    
     
-    id$.subscribe(id => {
-        const elem = document.getElementById(id);
+    selector$.subscribe(selector => {
+        const elem = document.querySelector(selector);
         if (elem) {
             elem.focus();
         }
