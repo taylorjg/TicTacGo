@@ -4,6 +4,7 @@ import {makeDOMDriver, hJSX} from "@cycle/dom";
 import {makeHTTPDriver} from "@cycle/http";
 import isolate from "@cycle/isolate";
 import TicTacToe from "./Components/TicTacToe/TicTacToe";
+import setFocusDriver from "./CustomDrivers/setFocus";
 
 function main(sources) {
     const init$ = Observable.timer(0);
@@ -27,17 +28,7 @@ function main(sources) {
 const drivers = {
     DOM: makeDOMDriver("#app"),
     HTTP: makeHTTPDriver(),
-    SetFocus: function(id$) {    
-        id$.subscribe(id => {
-            const elem = document.getElementById(id);
-            if (elem) {
-                elem.focus();
-            }
-        });
-        const source = Observable.empty();
-        source.isolateSource = s => s;
-        return source;
-    }    
+    SetFocus: setFocusDriver
 };
 
 run(main, drivers);
