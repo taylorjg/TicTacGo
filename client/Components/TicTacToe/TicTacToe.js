@@ -124,6 +124,7 @@ function model(actions) {
 
 function TicTacToe(sources, init$, props$) {
     const proxyState$ = new Subject();
+    sources.init$ = init$;
     sources.props$ = props$;
     sources.state$ = proxyState$;
     const board = Board(sources);

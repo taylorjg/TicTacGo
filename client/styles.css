@@ -4,10 +4,11 @@ table td {
 }
 
 table td div {
-    width: 60px;
-    height: 60px;
-    margin: 20px;
+    width: 88px;
+    height: 88px;
+    margin: 6px;
     font-size: 32pt;
+    line-height: 88px;
     vertical-align: middle;
     text-align: center;
 }
