@@ -3,10 +3,8 @@ import {hJSX} from "@cycle/dom";
 import {GAME_STATE_NOT_STARTED, GAME_STATE_GAME_OVER} from "./constants";
 
 function intent(sources) {
-    const s1$ = Observable.combineLatest(sources.init$, sources.props$, (_, props) => {
-        return props.initialFocus ? ".start" : null;
-    });
-    const s2$ = Observable.empty();
+    const s1$ = Observable.combineLatest(sources.init$, sources.props$, (_, props) => props.initialFocus ? ".start" : null);
+    const s2$ = sources.gameOver$.map(_ => ".start");
     const actions = {
         start$: sources.DOM.select(".start").events("click"),
         setFocusSelector$: Observable.merge(s1$, s2$).filter(selector => selector !== null)

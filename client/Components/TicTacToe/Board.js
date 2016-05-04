@@ -56,12 +56,14 @@ function intent(sources) {
     const navigateUp$ = navigateOnKeydown(sources, UP_ARROW_KEY, goUp);
     const navigateRight$ = navigateOnKeydown(sources, RIGHT_ARROW_KEY, goRight);
     const navigateDown$ = navigateOnKeydown(sources, DOWN_ARROW_KEY, goDown);
-    const actions = {
-        selectedCell$: eventToCellIndex(Observable.merge(click$, spaceKey$)),
-        setFocusSelector$: Observable.merge(navigateLeft$, navigateUp$, navigateRight$, navigateDown$)
+    const s1$ = Observable.merge(navigateLeft$, navigateUp$, navigateRight$, navigateDown$)
             .filter(index => index >= 0)
             .map(index => INDICES_TO_IDS[index])
-            .map(id => `#${id}`) 
+            .map(id => `#${id}`);
+    const s2$ = sources.gameStarted$.map(_ => "#cell11");
+    const actions = {
+        selectedCell$: eventToCellIndex(Observable.merge(click$, spaceKey$)),
+        setFocusSelector$: Observable.merge(s1$, s2$) 
     };
     return actions;
 }

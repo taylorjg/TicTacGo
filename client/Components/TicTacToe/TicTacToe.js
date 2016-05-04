@@ -65,6 +65,7 @@ function startNewGame(actions, _) {
         winningPlayer: null,
         winningLine: null
     };
+    actions.gameStarted$.onNext();
     if (state.gameState === GAME_STATE_COMPUTER_MOVE) {
         const request = makeComputerMoveRequest(state);
         actions.request$.onNext(request);
@@ -92,7 +93,7 @@ function humanMove(actions, index, state) {
     return updatedState;
 }
 
-function computerMove(responseBody, state) {
+function computerMove(actions, responseBody, state) {
     const updatedState = {
         board: responseBody.board,
         humanPiece: state.humanPiece,
@@ -101,6 +102,9 @@ function computerMove(responseBody, state) {
         winningPlayer: responseBody.winningPlayer || null,
         winningLine: responseBody.winningLine || null
     };
+    if (updatedState.gameState === GAME_STATE_GAME_OVER) {
+        actions.gameOver$.onNext();
+    }
     return updatedState;
 }
 
@@ -115,7 +119,7 @@ function model(actions) {
     const computerMove$ = actions.response$$
         .mergeAll()
         .delay(DELIBERATE_COMPUTER_MOVE_DELAY)
-        .map(response => curriedComputerMove(response.body));
+        .map(response => curriedComputerMove(actions, response.body));
     const transform$ = Observable.merge(init$, start$, humanMove$, computerMove$);
     const state$ = transform$.scan((state, transform) => transform(state), {});
     return state$;
@@ -123,14 +127,20 @@ function model(actions) {
 
 function TicTacToe(sources, init$, props$) {
     const proxyState$ = new Subject();
+    const proxyGameStarted$ = new Subject();
+    const proxyGameOver$ = new Subject();
     sources.init$ = init$;
     sources.props$ = props$;
     sources.state$ = proxyState$;
+    sources.gameStarted$ = proxyGameStarted$;
+    sources.gameOver$ = proxyGameOver$;
     const board = Board(sources);
     const messages = Messages(sources);
     const buttons = Buttons(sources);
     const actions = {
         init$: init$,
+        gameStarted$: proxyGameStarted$,
+        gameOver$: proxyGameOver$,
         start$: buttons.start$,
         selectedCell$: board.selectedCell$,
         request$: new Subject(),
