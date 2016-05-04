@@ -6,25 +6,22 @@ function intent(sources) {
     const s1$ = Observable.combineLatest(sources.init$, sources.props$, (_, props) => {
         return props.initialFocus ? ".start" : null;
     });
-    const s2$ = Observable.combineLatest(sources.state$, sources.props$, (state, props) => {
-        return state.gameState === GAME_STATE_GAME_OVER ? ".newGame" : null;
-    });
+    const s2$ = Observable.empty();
     const actions = {
         start$: sources.DOM.select(".start").events("click"),
-        newGame$: sources.DOM.select(".newGame").events("click"),
         setFocusSelector$: Observable.merge(s1$, s2$).filter(selector => selector !== null)
     };
     return actions;
 }
 
 function renderButtonRow(state, props) {
-    const startButton = state.gameState === GAME_STATE_NOT_STARTED
+    const showStartButton =
+        state.gameState === GAME_STATE_NOT_STARTED ||
+        state.gameState === GAME_STATE_GAME_OVER; 
+    const startButton = showStartButton
         ? <button type="button" className="start btn btn-sm btn-primary" tabIndex={props.firstTabIndex + 10}>Start</button>
         : null;
-    const newGameButton = state.gameState === GAME_STATE_GAME_OVER
-        ? <button type="button" className="newGame btn btn-sm btn-primary" tabIndex={props.firstTabIndex + 11}>New Game</button>
-        : null;
-    const vtree$ = <div>{startButton}{newGameButton}</div>;
+    const vtree$ = <div>{startButton}</div>;
     return vtree$;
 }
 
@@ -37,7 +34,6 @@ function Buttons(sources) {
     return {
         DOM: view(sources),
         start$: actions.start$,
-        newGame$: actions.newGame$,
         setFocusSelector$: actions.setFocusSelector$
     };
 }

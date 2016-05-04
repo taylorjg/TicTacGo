@@ -111,13 +111,12 @@ const curriedComputerMove = R.curry(computerMove);
 function model(actions) {
     const init$ = actions.init$.map(_ => init);
     const start$ = actions.start$.map(_ => curriedStartNewGame(actions));  
-    const newGame$ = actions.newGame$.map(_ => curriedStartNewGame(actions));  
     const humanMove$ = actions.selectedCell$.map(index => curriedHumanMove(actions, index));
     const computerMove$ = actions.response$$
         .mergeAll()
         .delay(DELIBERATE_COMPUTER_MOVE_DELAY)
         .map(response => curriedComputerMove(response.body));
-    const transform$ = Observable.merge(init$, start$, humanMove$, computerMove$, newGame$);
+    const transform$ = Observable.merge(init$, start$, humanMove$, computerMove$);
     const state$ = transform$.scan((state, transform) => transform(state), {});
     return state$;
 }
@@ -132,9 +131,8 @@ function TicTacToe(sources, init$, props$) {
     const buttons = Buttons(sources);
     const actions = {
         init$: init$,
-        selectedCell$: board.selectedCell$,
         start$: buttons.start$,
-        newGame$: buttons.newGame$,
+        selectedCell$: board.selectedCell$,
         request$: new Subject(),
         response$$: sources.HTTP
     };
